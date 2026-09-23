@@ -28,24 +28,22 @@ const defaultTables = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8'];
 const seed = async () => {
   await connectDB();
 
-  // Seed admin + kitchen users (only if they don't already exist)
-  const adminExists = await AdminUser.findOne({ username: process.env.ADMIN_USERNAME });
-  if (!adminExists) {
-    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
-    await AdminUser.create({ username: process.env.ADMIN_USERNAME, password: hashedPassword, role: 'admin' });
-    console.log('Admin user created.');
-  } else {
-    console.log('Admin user already exists, skipping.');
-  }
+  // Keep demo credentials synchronized with the environment when seeding.
+  const adminPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+  await AdminUser.findOneAndUpdate(
+    { username: process.env.ADMIN_USERNAME },
+    { username: process.env.ADMIN_USERNAME, password: adminPassword, role: 'admin' },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  console.log('Admin credentials synchronized.');
 
-  const kitchenExists = await AdminUser.findOne({ username: process.env.KITCHEN_USERNAME });
-  if (!kitchenExists) {
-    const hashedPassword = await bcrypt.hash(process.env.KITCHEN_PASSWORD, 10);
-    await AdminUser.create({ username: process.env.KITCHEN_USERNAME, password: hashedPassword, role: 'kitchen' });
-    console.log('Kitchen user created.');
-  } else {
-    console.log('Kitchen user already exists, skipping.');
-  }
+  const kitchenPassword = await bcrypt.hash(process.env.KITCHEN_PASSWORD, 10);
+  await AdminUser.findOneAndUpdate(
+    { username: process.env.KITCHEN_USERNAME },
+    { username: process.env.KITCHEN_USERNAME, password: kitchenPassword, role: 'kitchen' },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  console.log('Kitchen credentials synchronized.');
 
   // Seed menu items (only if the menu collection is empty)
   const menuCount = await MenuItem.countDocuments();

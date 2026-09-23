@@ -12,6 +12,7 @@ import messageRoutes from './routes/messages.js';
 import menuRoutes from './routes/menu.js';
 import tableRoutes from './routes/tables.js';
 import orderRoutes from './routes/orders.js';
+import settingsRoutes from './routes/settings.js';
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

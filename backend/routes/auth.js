@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import AdminUser from '../models/AdminUser.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -40,6 +41,27 @@ router.post('/login', async (req, res) => {
 
   res.cookie('bh_token', token, cookieOptions);
   res.json({ username: user.username, role: user.role });
+});
+
+router.patch('/password', requireAuth(['admin']), async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Current password and new password are required.' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ message: 'New password must be at least 6 characters.' });
+  }
+
+  const user = await AdminUser.findOne({ username: req.user.username });
+  if (!user || !(await bcrypt.compare(currentPassword, user.password))) {
+    return res.status(401).json({ message: 'Current password is incorrect.' });
+  }
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  await user.save();
+  res.json({ message: 'Password changed successfully.' });
 });
 
 router.post('/logout', (req, res) => {

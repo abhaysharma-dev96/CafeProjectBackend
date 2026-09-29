@@ -6,6 +6,7 @@ const router = express.Router();
 
 const defaultSettings = {
   key: 'site',
+  logoUrl: '',
   websiteName: 'Brew & Hearth',
   instagramUrl: 'https://instagram.com/brewandhearth',
   whatsappNumber: '+15551234567',
@@ -43,9 +44,14 @@ router.put('/', requireAuth(['admin']), async (req, res) => {
     'whatsappMessage', 'shopOpenTime', 'shopCloseTime', 'contactNumber', 'email',
     'address', 'footerText', 'footerLinks', 'copyright'
   ];
-  const updates = Object.fromEntries(
-    allowedFields.filter((field) => req.body[field] !== undefined).map((field) => [field, req.body[field]])
-  );
+
+  const updates = {};
+  for (const field of allowedFields) {
+    if (req.body[field] === undefined) continue;
+
+    const value = typeof req.body[field] === 'string' ? req.body[field].trim() : req.body[field];
+    updates[field] = field === 'logoUrl' && !value ? '' : value;
+  }
 
   const settings = await Settings.findOneAndUpdate(
     { key: 'site' },

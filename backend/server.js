@@ -17,6 +17,7 @@ import settingsRoutes from './routes/settings.js';
 const app = express();
 
 connectDB();
+app.set('trust proxy', 1);
 
 // Security headers (protects against clickjacking, MIME-sniffing, etc.)
 app.use(helmet());
@@ -30,8 +31,10 @@ app.use(cookieParser());
 
 // General rate limit — protects the whole API from being hammered
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300,
+  windowMs: 60 * 1000, // 1 minute
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { message: 'Too many requests. Please try again later.' }
 });
 app.use('/api', generalLimiter);

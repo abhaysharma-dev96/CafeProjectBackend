@@ -36,11 +36,19 @@ const generalLimiter = rateLimit({
 });
 app.use('/api', generalLimiter);
 
-// Stricter limit just for login — protects against password brute-forcing
+// Stricter limit just for login — keep it tight in production, but avoid blocking
+// normal local development/testing with repeated legitimate retries.
+const isProduction = process.env.NODE_ENV === 'production';
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: { message: 'Too many login attempts. Please try again in 15 minutes.' }
+  max: isProduction ? 10 : 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: isProduction
+      ? 'Too many login attempts. Please try again in 15 minutes.'
+      : 'Too many login attempts. Please wait a moment and try again.'
+  }
 });
 app.use('/api/auth/login', loginLimiter);
 

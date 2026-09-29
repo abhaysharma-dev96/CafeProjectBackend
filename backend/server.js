@@ -26,7 +26,7 @@ app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true // required so the browser sends/receives the httpOnly cookie
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 
 // General rate limit — protects the whole API from being hammered

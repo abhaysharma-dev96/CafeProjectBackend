@@ -23,6 +23,9 @@ const defaultMenuItems = [
   { name: 'Basque Cheesecake', price: 6.50, category: 'Desserts', desc: 'Burnt-top cheesecake, creamy center, no crust needed.', tags: ['Creamy', 'Rich'], image: 'https://images.unsplash.com/photo-1567327613485-fbc7bf196198?auto=format&fit=crop&q=80&w=600' }
 ];
 
+// Demo prices above were written in dollars; convert to rupees (rounded to nearest ₹5) when seeding.
+const toRupees = (item) => ({ ...item, price: Math.round((item.price * 40) / 5) * 5 });
+
 const defaultTables = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8'];
 
 const seed = async () => {
@@ -48,7 +51,7 @@ const seed = async () => {
   // Seed menu items (only if the menu collection is empty)
   const menuCount = await MenuItem.countDocuments();
   if (menuCount === 0) {
-    await MenuItem.insertMany(defaultMenuItems);
+    await MenuItem.insertMany(defaultMenuItems.map(toRupees));
     console.log(`${defaultMenuItems.length} menu items seeded.`);
   } else {
     console.log('Menu items already exist, skipping.');

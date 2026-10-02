@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
+import './middleware/asyncSafe.js'; // must load before the route files below
 
 import authRoutes from './routes/auth.js';
 import reservationRoutes from './routes/reservations.js';

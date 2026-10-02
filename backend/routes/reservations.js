@@ -9,6 +9,8 @@ const router = express.Router();
 const reservationValidation = [
   body('name').trim().isLength({ min: 2 }).withMessage('Please enter a valid name.')
     .matches(/^[A-Za-z\s'-]+$/).withMessage('Name should contain letters only.'),
+  body('phone').trim().matches(/^\+?[0-9\s-]{7,16}$/).withMessage('Please enter a valid phone number.'),
+  body('email').trim().isEmail().withMessage('Please enter a valid email address.'),
   body('date').notEmpty().withMessage('Date is required.'),
   body('time').notEmpty().withMessage('Time is required.'),
   body('notes').optional().isLength({ max: 500 }).withMessage('Notes must be under 500 characters.')
@@ -17,8 +19,8 @@ const reservationValidation = [
 // Public — customer submits a reservation from the website
 router.post('/', reservationValidation, validate, async (req, res) => {
   try {
-    const { name, date, time, partySize, notes } = req.body;
-    const reservation = await Reservation.create({ name, date, time, partySize, notes });
+    const { name, phone, email, date, time, partySize, notes } = req.body;
+    const reservation = await Reservation.create({ name, phone, email, date, time, partySize, notes });
     res.status(201).json(reservation);
   } catch (err) {
     res.status(500).json({ message: 'Could not save reservation.' });

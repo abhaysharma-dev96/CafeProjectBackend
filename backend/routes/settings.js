@@ -9,6 +9,10 @@ const defaultSettings = {
   logoUrl: '',
   websiteName: 'Brew & Hearth',
   instagramUrl: 'https://instagram.com/brewandhearth',
+  facebookUrl: '',
+  twitterUrl: '',
+  linkedinUrl: '',
+  quickLinks: 'Home|/\nMenu|/menu\nAbout|/about\nGallery|/gallery\nReservations|/reservations',
   whatsappNumber: '+15551234567',
   whatsappEnabled: true,
   whatsappMessage: 'Hello, I would like to know more about Brew & Hearth.',
@@ -28,7 +32,7 @@ router.get('/', async (req, res) => {
     settings = await Settings.create(defaultSettings);
   } else {
     const missingFields = Object.fromEntries(
-      Object.entries(defaultSettings).filter(([field, value]) => !settings[field] && value !== undefined)
+      Object.entries(defaultSettings).filter(([field, value]) => (settings[field] === undefined || settings[field] === null) && value !== undefined)
     );
     if (Object.keys(missingFields).length > 0) {
       Object.assign(settings, missingFields);
@@ -40,7 +44,7 @@ router.get('/', async (req, res) => {
 
 router.put('/', requireAuth(['admin']), async (req, res) => {
   const allowedFields = [
-    'logoUrl', 'websiteName', 'instagramUrl', 'whatsappNumber', 'whatsappEnabled',
+    'logoUrl', 'websiteName', 'instagramUrl', 'facebookUrl', 'twitterUrl', 'linkedinUrl', 'quickLinks', 'whatsappNumber', 'whatsappEnabled',
     'whatsappMessage', 'shopOpenTime', 'shopCloseTime', 'contactNumber', 'email',
     'address', 'footerText', 'footerLinks', 'copyright'
   ];

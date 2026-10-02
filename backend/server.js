@@ -17,7 +17,9 @@ import settingsRoutes from './routes/settings.js';
 const app = express();
 
 connectDB();
-app.set('trust proxy', 1);
+// Vercel (rewrite) -> Render proxy -> Express: 2 proxy hops. With 1, every visitor
+// looked like the same IP (Vercel's), so ALL users shared one rate-limit bucket -> 429.
+app.set('trust proxy', 2);
 
 // Security headers (protects against clickjacking, MIME-sniffing, etc.)
 app.use(helmet());
@@ -32,7 +34,8 @@ app.use(cookieParser());
 // General rate limit — protects the whole API from being hammered
 const generalLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 200,
+  max: 300,
+  skip: (req) => req.path === '/health',
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Too many requests. Please try again later.' }
@@ -45,6 +48,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isProduction ? 10 : 100,
+  skipSuccessfulRequests: true, // only failed logins count
   standardHeaders: true,
   legacyHeaders: false,
   message: {

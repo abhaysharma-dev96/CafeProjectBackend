@@ -65,7 +65,9 @@ router.patch('/password', requireAuth(['admin']), async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-  res.clearCookie('bh_token', cookieOptions);
+  // maxAge is not allowed here (deprecated in Express 5); the cookie is expired automatically
+  const { maxAge, ...clearOptions } = cookieOptions;
+  res.clearCookie('bh_token', clearOptions);
   res.json({ message: 'Logged out.' });
 });
 

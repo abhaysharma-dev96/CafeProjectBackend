@@ -33,10 +33,20 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 
+// Real visitor IP. The site reaches this server through Vercel's /api rewrite, which puts the
+// visitor's IP first in x-forwarded-for. Counting by that IP gives every visitor their own
+// bucket, instead of everyone sharing the proxy's address (the cause of the repeated 429s).
+const clientKey = (req) => {
+  const forwarded = req.headers['x-forwarded-for'];
+  const first = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : '';
+  return first || req.ip;
+};
+
 // General rate limit — protects the whole API from being hammered
 const generalLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 300,
+  max: 1000,
+  keyGenerator: clientKey,
   skip: (req) => req.path === '/health',
   standardHeaders: true,
   legacyHeaders: false,
@@ -49,7 +59,8 @@ app.use('/api', generalLimiter);
 const isProduction = process.env.NODE_ENV === 'production';
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: isProduction ? 10 : 100,
+  max: isProduction ? 20 : 100,
+  keyGenerator: clientKey,
   skipSuccessfulRequests: true, // only failed logins count
   standardHeaders: true,
   legacyHeaders: false,

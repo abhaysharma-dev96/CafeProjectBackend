@@ -13,6 +13,7 @@ const defaultSettings = {
   twitterUrl: '',
   linkedinUrl: '',
   quickLinks: 'Home|/\nMenu|/menu\nAbout|/about\nGallery|/gallery\nReservations|/reservations',
+  callEnabled: true,
   whatsappNumber: '+15551234567',
   whatsappEnabled: true,
   whatsappMessage: 'Hello, I would like to know more about Brew & Hearth.',
@@ -44,7 +45,7 @@ router.get('/', async (req, res) => {
 
 router.put('/', requireAuth(['admin']), async (req, res) => {
   const allowedFields = [
-    'logoUrl', 'websiteName', 'instagramUrl', 'facebookUrl', 'twitterUrl', 'linkedinUrl', 'quickLinks', 'whatsappNumber', 'whatsappEnabled',
+    'logoUrl', 'websiteName', 'instagramUrl', 'facebookUrl', 'twitterUrl', 'linkedinUrl', 'quickLinks', 'whatsappNumber', 'whatsappEnabled', 'callEnabled',
     'whatsappMessage', 'shopOpenTime', 'shopCloseTime', 'contactNumber', 'email',
     'address', 'footerText', 'footerLinks', 'copyright'
   ];

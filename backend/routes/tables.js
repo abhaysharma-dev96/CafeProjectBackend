@@ -2,6 +2,7 @@ import express from 'express';
 import Table from '../models/Table.js';
 import Order from '../models/Order.js';
 import { requireAuth } from '../middleware/auth.js';
+import { imageSrc, sendDataUrlImage } from '../utils/dataUrl.js';
 
 const router = express.Router();
 
@@ -13,10 +14,30 @@ router.get('/', async (req, res) => {
   const withStatus = await Promise.all(
     tables.map(async (t) => {
       const hasUnpaid = await Order.exists({ table: t.label, paid: false });
-      return { ...t.toObject(), status: hasUnpaid ? 'occupied' : 'available' };
+      const { customQrImage, ...rest } = t.toObject();
+      return {
+        ...rest,
+        customQr: imageSrc(customQrImage, `/api/tables/${t._id}/qr-image`, t.updatedAt),
+        status: hasUnpaid ? 'occupied' : 'available'
+      };
     })
   );
   res.json(withStatus);
+});
+
+// Public — serves an uploaded custom QR image as a normal image file
+router.get('/:id/qr-image', async (req, res) => {
+  const table = await Table.findById(req.params.id).select('customQrImage');
+  if (!table) return res.status(404).end();
+  return sendDataUrlImage(res, table.customQrImage);
+});
+
+// Admin only — set (image) or clear (empty image) the custom QR for a table
+router.put('/:id/qr-image', requireAuth(['admin']), async (req, res) => {
+  const image = typeof req.body.image === 'string' ? req.body.image.trim() : '';
+  const table = await Table.findByIdAndUpdate(req.params.id, { customQrImage: image }, { new: true });
+  if (!table) return res.status(404).json({ message: 'Table not found.' });
+  res.json({ customQr: imageSrc(table.customQrImage, `/api/tables/${table._id}/qr-image`, table.updatedAt) });
 });
 
 // Admin only — add table

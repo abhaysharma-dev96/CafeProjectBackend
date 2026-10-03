@@ -11,6 +11,8 @@ const settingsSchema = new mongoose.Schema({
   quickLinks: { type: String, default: 'Home|/\nMenu|/menu\nAbout|/about\nGallery|/gallery\nReservations|/reservations' },
   whatsappNumber: { type: String, default: '+15551234567' },
   whatsappEnabled: { type: Boolean, default: true },
+  callEnabled: { type: Boolean, default: true },
+  galleryInitialized: { type: Boolean, default: false },
   whatsappMessage: { type: String, default: 'Hello, I would like to know more about Brew & Hearth.' },
   shopOpenTime: { type: String, default: '08:00 AM' },
   shopCloseTime: { type: String, default: '08:00 PM' },

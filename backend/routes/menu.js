@@ -5,11 +5,12 @@ import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
 const router = express.Router();
+const escapeRegex = (text) => String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const menuValidation = [
   body('name').trim().notEmpty().withMessage('Item name is required.'),
   body('price').isFloat({ gt: 0 }).withMessage('Price must be a number greater than 0.'),
-  body('category').isIn(['Coffee', 'Tea', 'Snacks', 'Desserts']).withMessage('Invalid category.')
+  body('category').trim().isLength({ min: 2, max: 40 }).withMessage('Category should be 2 to 40 characters.')
 ];
 
 // Public — anyone browsing the menu page
@@ -21,12 +22,12 @@ router.get('/', async (req, res) => {
 // Admin only — add item
 router.post('/', requireAuth(['admin']), menuValidation, validate, async (req, res) => {
   try {
-    const { name, price, category, desc, tags, image } = req.body;
-    const existing = await MenuItem.findOne({ name: new RegExp(`^${name}$`, 'i') });
+    const { name, price, category, desc, tags, image, featured } = req.body;
+    const existing = await MenuItem.findOne({ name: new RegExp(`^${escapeRegex(name)}$`, 'i') });
     if (existing) {
       return res.status(409).json({ message: 'An item with this name already exists.' });
     }
-    const item = await MenuItem.create({ name, price, category, desc, tags, image });
+    const item = await MenuItem.create({ name, price, category, desc, tags, image, featured: !!featured });
     res.status(201).json(item);
   } catch (err) {
     res.status(500).json({ message: 'Could not add item.' });
@@ -36,13 +37,13 @@ router.post('/', requireAuth(['admin']), menuValidation, validate, async (req, r
 // Admin only — edit item
 router.put('/:id', requireAuth(['admin']), menuValidation, validate, async (req, res) => {
   try {
-    const { name, price, category, desc, tags, image } = req.body;
-    const duplicate = await MenuItem.findOne({ name: new RegExp(`^${name}$`, 'i'), _id: { $ne: req.params.id } });
+    const { name, price, category, desc, tags, image, featured } = req.body;
+    const duplicate = await MenuItem.findOne({ name: new RegExp(`^${escapeRegex(name)}$`, 'i'), _id: { $ne: req.params.id } });
     if (duplicate) return res.status(409).json({ message: 'An item with this name already exists.' });
 
     const item = await MenuItem.findByIdAndUpdate(
       req.params.id,
-      { name, price, category, desc, tags, image },
+      { name, price, category, desc, tags, image, featured: !!featured },
       { new: true, runValidators: true }
     );
     if (!item) return res.status(404).json({ message: 'Item not found.' });

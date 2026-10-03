@@ -18,9 +18,10 @@ const submitLimiter = rateLimit({
 
 const reviewValidation = [
   body('name').trim().isLength({ min: 2, max: 60 }).withMessage('Please enter your name.')
-    .matches(/^[A-Za-z\s'.-]+$/).withMessage('Name should contain letters only.'),
+    .matches(/^[A-Za-z\s'-]+$/).withMessage('Name should contain letters only.'),
   body('rating').isInt({ min: 1, max: 5 }).withMessage('Please select a rating from 1 to 5.').toInt(),
-  body('comment').trim().isLength({ min: 10, max: 5000 }).withMessage('Review should be at least 10 characters.')
+  // Minimum 10 characters; no practical maximum (20000 is only a safety cap)
+  body('comment').trim().isLength({ min: 10, max: 20000 }).withMessage('Review should be at least 10 characters.')
 ];
 
 // Public — only APPROVED reviews are ever visible on the website

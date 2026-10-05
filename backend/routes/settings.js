@@ -1,6 +1,7 @@
 import express from 'express';
 import Settings from '../models/Settings.js';
 import { requireAuth } from '../middleware/auth.js';
+import { sanitizeSeo } from '../utils/sanitizeSeo.js';
 
 const router = express.Router();
 
@@ -61,6 +62,23 @@ router.put('/', requireAuth(['admin']), async (req, res) => {
   const settings = await Settings.findOneAndUpdate(
     { key: 'site' },
     { $set: updates, $setOnInsert: { key: 'site' } },
+    { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
+  );
+  res.json(settings);
+});
+
+// SEO has its own endpoint so saving Settings never overwrites SEO (and vice versa).
+router.put('/seo', requireAuth(['admin']), async (req, res) => {
+  let seo;
+  try {
+    seo = sanitizeSeo(req.body?.seo || req.body);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+
+  const settings = await Settings.findOneAndUpdate(
+    { key: 'site' },
+    { $set: { seo }, $setOnInsert: { key: 'site' } },
     { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
   );
   res.json(settings);

@@ -1,5 +1,12 @@
 import mongoose from 'mongoose';
 
+// Per-page SEO overrides. An empty string means "use the built-in default".
+const pageSeo = {
+  title: { type: String, default: '' },
+  description: { type: String, default: '' },
+  keywords: { type: String, default: '' }
+};
+
 const settingsSchema = new mongoose.Schema({
   key: { type: String, unique: true, default: 'site' },
   logoUrl: { type: String, default: '' },
@@ -21,7 +28,22 @@ const settingsSchema = new mongoose.Schema({
   address: { type: String, default: '123 Artisan Alley, Portland, OR 97209' },
   footerText: { type: String, default: 'A space for mindful consumption and deliberate pauses.' },
   footerLinks: { type: String, default: 'Careers | Privacy Policy | Terms of Service' },
-  copyright: { type: String, default: '© 2024 Brew & Hearth. All Rights Reserved.' }
+  copyright: { type: String, default: '© 2024 Brew & Hearth. All Rights Reserved.' },
+  seo: {
+    allowIndexing: { type: Boolean, default: true },
+    siteUrl: { type: String, default: '' },
+    defaultOgImage: { type: String, default: '' },
+    twitterHandle: { type: String, default: '' },
+    googleVerification: { type: String, default: '' },
+    bingVerification: { type: String, default: '' },
+    pages: {
+      home: pageSeo,
+      menu: pageSeo,
+      about: pageSeo,
+      gallery: pageSeo,
+      reservations: pageSeo
+    }
+  }
 }, { timestamps: true });
 
 export default mongoose.model('Settings', settingsSchema);
